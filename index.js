@@ -23,6 +23,21 @@ app.get('/api/grades', async (req, res) => {
     res.send({ grades });
 });
 
+app.post('/api/grades', async (req, res, next) => {
+    try {
+        const { course, grade, name } = req.body;
+
+        if(!course){
+            throw new StatusError(400, 'No course name received');
+        }
+
+
+        res.send('Testing create new record');
+    } catch(error){
+        next(error);
+    }
+});
+
 app.use(defaultErrorHandler);
 
 app.listen(PORT, () => {

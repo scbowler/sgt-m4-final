@@ -1,6 +1,6 @@
 const StatusError = require('../helpers/status_error');
 
-module.exports = (error, req, res) => {
+module.exports = (error, req, res, next) => {
     const output = {
         code: 500,
         errors: ['Internal Server Error'],
