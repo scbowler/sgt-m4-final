@@ -18,21 +18,47 @@ app.get('/api/test', async (req, res) => {
 });
 
 app.get('/api/grades', async (req, res) => {
-    const [grades] = await db.query('SELECT pid, course, grade, name, updated AS lastUpdated FROM grades');
+    const [records] = await db.query('SELECT pid, course, grade, name, updated AS lastUpdated FROM grades');
 
-    res.send({ grades });
+    res.send({ records });
 });
 
 app.post('/api/grades', async (req, res, next) => {
     try {
         const { course, grade, name } = req.body;
+        const errors = [];
 
         if(!course){
-            throw new StatusError(400, 'No course name received');
+            errors.push('No course name received');
+        }
+        if (!name) {
+            errors.push('No student name received');
+        }
+        if (!grade) {
+            errors.push('No course grade received');
+        } else if(isNaN(grade) || grade < 0 || grade > 100){
+            errors.push(`Course grade must be a number between 0 and 100 inclusive. ${grade} is invalid.`);
         }
 
+        if(errors.length){
+            throw new StatusError(422, errors);
+        }
 
-        res.send('Testing create new record');
+        const [result] = await db.execute('INSERT INTO grades (pid, course, grade, name) VALUES (UUID(), ?, ?, ?)', [course, grade, name]);
+        let record = null;
+
+        if(result.affectedRows){
+            const [[r]] = await db.query('SELECT pid, course, grade, name, updated AS lastUpdated FROM grades WHERE id=?', [result.insertId]);
+
+            record = r;
+        } else {
+            throw new StatusError(500, 'Error saving record');
+        }
+
+        res.send({
+            message: 'New student grade record created successfully',
+            record
+        });
     } catch(error){
         next(error);
     }
