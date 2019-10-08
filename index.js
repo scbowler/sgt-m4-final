@@ -13,6 +13,12 @@ app.get('/api/test', async (req, res) => {
     });
 });
 
+app.get('/api/grades', async (req, res) => {
+    const [grades] = await db.query('SELECT pid, course, grade, name, updated AS lastUpdated FROM grades');
+
+    res.send({ grades });
+});
+
 app.listen(PORT, () => {
     console.log('Server listening at localhost:' + PORT);
 });
