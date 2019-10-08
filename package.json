@@ -4,6 +4,7 @@
   "description": "Module 4 Final project",
   "main": "index.js",
   "scripts": {
+    "start": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -15,5 +16,12 @@
   "bugs": {
     "url": "https://github.com/scbowler/sgt-m4-final/issues"
   },
-  "homepage": "https://github.com/scbowler/sgt-m4-final#readme"
+  "homepage": "https://github.com/scbowler/sgt-m4-final#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "mysql2": "^1.7.0"
+  },
+  "devDependencies": {
+    "nodemon": "^1.19.3"
+  }
 }
