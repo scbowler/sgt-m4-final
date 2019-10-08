@@ -1,8 +1,12 @@
 const express = require('express');
 const PORT = process.env.PORT || 9000;
 const db = require('./db');
+const StatusError = require('./helpers/status_error');
+const defaultErrorHandler = require('./middleware/default_error_handler');
 
 const app = express();
+
+app.use(express.urlencoded({extended: false}));
 
 app.get('/api/test', async (req, res) => {
     const [results] = await db.query('SELECT * FROM grades');
@@ -18,6 +22,8 @@ app.get('/api/grades', async (req, res) => {
 
     res.send({ grades });
 });
+
+app.use(defaultErrorHandler);
 
 app.listen(PORT, () => {
     console.log('Server listening at localhost:' + PORT);
