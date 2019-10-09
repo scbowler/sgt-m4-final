@@ -64,6 +64,25 @@ app.post('/api/grades', async (req, res, next) => {
     }
 });
 
+app.patch('/api/grades/:record_pid', async (req, res, next) => {
+    try {
+        const { record_pid } = req.params;
+        const { course, grade, name } = req.body;
+
+        const [[record = null]] = await db.execute('SELECT * FROM grades WHERE pid=?', [record_pid]);
+
+        if(!record) throw new StatusError(404, `No record found with an ID of: ${record_pid}`);
+
+        res.send({
+            message: 'Testing patch record',
+            record_pid,
+            record
+        });
+    } catch(error) {
+        next(error);
+    }
+});
+
 app.use(defaultErrorHandler);
 
 app.listen(PORT, () => {
