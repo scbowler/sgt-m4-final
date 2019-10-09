@@ -66,17 +66,57 @@ app.post('/api/grades', async (req, res, next) => {
 
 app.patch('/api/grades/:record_pid', async (req, res, next) => {
     try {
-        const { record_pid } = req.params;
-        const { course, grade, name } = req.body;
+        const { body, params: { record_pid } } = req;
+        const whiteList = ['course', 'grade', 'name'];
+        let hasUpdates = false;
 
-        const [[record = null]] = await db.execute('SELECT * FROM grades WHERE pid=?', [record_pid]);
+        const [[record = null]] = await db.execute('SELECT id FROM grades WHERE pid=?', [record_pid]);
 
         if(!record) throw new StatusError(404, `No record found with an ID of: ${record_pid}`);
 
+        let query = 'UPDATE grades SET';
+        const values = [];
+
+        whiteList.forEach(col => {
+            const value = body[col];
+
+            if(value){
+                hasUpdates = true;
+
+                if(col === 'grade'){
+                    if(isNaN(value) || value < 0 || value > 100) {
+                        throw new StatusError(422, `Course grade must be a number between 0 and 100 inclusive. ${value} is invalid.`);
+                    }
+                }
+
+                if(values.length){
+                    query += ',';
+                }
+
+                query += ` ${col}=?`;
+
+                values.push(value);
+            }
+        });
+
+        if(!values.length){
+            throw new StatusError(400, 'No valid fields received to update');
+        }
+
+        query += ' WHERE id=?';
+        values.push(record.id);
+
+        const [result] = await db.execute(query, values);
+
+        if(!result.affectedRows){
+            throw new StatusError(500, 'Error updating student grade record');
+        }
+
+        const [[updatedRecord]] = await db.query('SELECT pid, course, grade, name, updated AS lastUpdated FROM grades WHERE id=?', [record.id]);
+        
         res.send({
-            message: 'Testing patch record',
-            record_pid,
-            record
+            message: `Updated grade record for ${updatedRecord.name}`,
+            record: updatedRecord
         });
     } catch(error) {
         next(error);
