@@ -123,6 +123,25 @@ app.patch('/api/grades/:record_pid', async (req, res, next) => {
     }
 });
 
+app.delete('/api/grades/:record_pid', async (req, res, next) => {
+    try {
+        const { record_pid } = req.params;
+
+        const [result] = await db.execute('DELETE FROM grades WHERE pid=?', [record_pid]);
+
+        if(!result.affectedRows){
+            throw new StatusError(404, `No record found with an ID of: ${record_pid}`);
+        }
+
+        res.send({
+            message: `Successfully deleted grade record: ${record_pid}`,
+            deletedPid: record_pid
+        });
+    } catch(error) {
+        next(error);
+    }
+});
+
 app.use(defaultErrorHandler);
 
 app.listen(PORT, () => {
